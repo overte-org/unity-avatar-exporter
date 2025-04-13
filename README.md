@@ -14,7 +14,7 @@ Note: It is recommended to use Unity version 2022.3.22f1 for this Avatar Exporte
 4. Paste `https://github.com/KhronosGroup/UnityGLTF.git#release/2.13.0`
 5. Click <kbd>Add</kbd>.
 
-Repeat the steps above with the following url: `https://github.com/AnotherFoxGuy/Overte-Unity-Avatar-Exporter.git`
+Repeat the steps above with the following url: `https://github.com/overte-org/unity-avatar-exporter.git`
 
 ### Usage
 
