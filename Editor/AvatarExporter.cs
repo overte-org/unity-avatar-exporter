@@ -69,12 +69,27 @@ namespace Overte.Exporter.Avatar
             var avatarCopy = Object.Instantiate(_avatar, Vector3.zero, Quaternion.identity);
             var avatarDescriptor = _avatar.GetComponent<OverteAvatarDescriptor>();
 
+            var meshes = avatarCopy.GetComponentsInChildren<SkinnedMeshRenderer>();
             if (avatarDescriptor.RemapedBlendShapeList.Count > 0 && avatarDescriptor.OptimizeBlendShapes)
             {
-                var meshes = avatarCopy.GetComponentsInChildren<SkinnedMeshRenderer>();
                 foreach (var mesh in meshes)
                 {
                     BakeAndKeepSpecifiedBlendShapes(avatarDescriptor, mesh);
+                }
+            }
+
+            if (avatarDescriptor.FlowBoneList.Count > 0)
+            {
+                foreach (var mesh in meshes)
+                {
+                    foreach (var bone in avatarDescriptor.FlowBoneList)
+                    {
+                        var tr = mesh.bones.SingleOrDefault(b => b.name == bone.boneName);
+                        if (tr == null)
+                            continue;
+                        var i = 0;
+                        IterateBone(tr, bone.ID, i);
+                    }
                 }
             }
 
@@ -82,12 +97,19 @@ namespace Overte.Exporter.Avatar
             exporter.SaveGLB(p, _avatar.name);
 
             SetBoneInformation(avatarCopy);
-            // // check if we should be substituting a bone for a missing UpperChest mapping
+            // check if we should be substituting a bone for a missing UpperChest mapping
             AdjustUpperChestMapping();
 
             WriteFst(path);
 
             Object.DestroyImmediate(avatarCopy);
+        }
+
+        private void IterateBone(Transform b, string name, int i)
+        {
+            b.name = $"flow_{name}_{i++}";
+            if (b.childCount > 0)
+                IterateBone(b.GetChild(0), name, i);
         }
 
         public Dictionary<AvatarRule, string> CheckForErrors(GameObject avatar)
@@ -129,6 +151,8 @@ namespace Overte.Exporter.Avatar
             var fst = new FST();
             fst.name = _name;
             fst.filename = $"{_avatar.name}.glb";
+            // TODO: Use the flowPhysicsData and flowCollisionsData fields
+            fst.extra = avatarDescriptor.FlowConfiguration;
 
             // write out joint mappings to fst file
             foreach (var userBoneInfo in _userBoneInfos)
@@ -222,10 +246,10 @@ namespace Overte.Exporter.Avatar
             {
                 var humanName = bone.humanName;
                 var userBoneName = bone.boneName;
-                if (!_userBoneInfos.TryGetValue(userBoneName, out var info)) 
+                if (!_userBoneInfos.TryGetValue(userBoneName, out var info))
                     continue;
                 ++info.mappingCount;
-                if (!HUMANOID_TO_OVERTE_JOINT_NAME.ContainsKey(humanName)) 
+                if (!HUMANOID_TO_OVERTE_JOINT_NAME.ContainsKey(humanName))
                     continue;
                 _userBoneInfos[userBoneName].humanName = humanName;
                 _humanoidToUserBoneMappings.Add(humanName, userBoneName);
@@ -612,7 +636,7 @@ namespace Overte.Exporter.Avatar
                 _failedAvatarRules.Add(avatarRule,
                     $"The number of bones mapped in Humanoid for the left {appendage} ({leftCount}) does not match the number of bones mapped in Humanoid for the right {appendage} ({rightCount}).");
         }
-        
+
         /// <summary>
         /// Bakes all blend shapes except those specified to keep
         /// </summary>

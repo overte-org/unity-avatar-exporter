@@ -9,12 +9,13 @@ namespace Overte.Exporter.Avatar
     public class OverteAvatarDescriptor : MonoBehaviour
     {
         [SerializeField] public string AvatarName;
-        
+
         [SerializeField] public bool OptimizeBlendShapes = true;
 
         // [SerializeField] private string m_exportPath;
 
         [SerializeField] public List<OvBlendshape> RemapedBlendShapeList = new();
+
         [Serializable]
         public class OvBlendshape
         {
@@ -22,5 +23,16 @@ namespace Overte.Exporter.Avatar
             public string to;
             public float multiplier;
         }
+
+        [SerializeField] public List<FlowBone> FlowBoneList = new();
+
+        [Serializable]
+        public class FlowBone
+        {
+            public string boneName;
+            public string ID;
+        }
+
+        [SerializeField] public string FlowConfiguration = "";
     }
 }
