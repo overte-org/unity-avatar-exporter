@@ -1,7 +1,15 @@
+//  OverteBlendshapeSelector.cs
+//
+//  Created by Edgar on 03-01-2026
+//  Copyright 2026 Overte e.V.
+//
+//  Distributed under the Apache License, Version 2.0.
+//  See the accompanying file LICENSE or http://www.apache.org/licenses/LICENSE-2.0.html
+
 using UnityEngine;
 using UnityEditor;
 using System.Collections.Generic;
-using overte_unity_avatar_exporter.Editor.Windows;
+using Overte.Exporter.Avatar.Editor.Windows;
 
 namespace Overte.Exporter.Avatar.Editor
 {

@@ -1,8 +1,16 @@
-﻿using System.Collections.Generic;
+﻿//  BlendshapeSelector.cs
+//
+//  Created by Edgar on 03-01-2026
+//  Copyright 2026 Overte e.V.
+//
+//  Distributed under the Apache License, Version 2.0.
+//  See the accompanying file LICENSE or http://www.apache.org/licenses/LICENSE-2.0.html
+
+using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 
-namespace overte_unity_avatar_exporter.Editor.Windows
+namespace Overte.Exporter.Avatar.Editor.Windows
 {
     // Popup window for selecting source blendshapes from SkinnedMeshRenderers
     public class BlendshapeSelector : EditorWindow
