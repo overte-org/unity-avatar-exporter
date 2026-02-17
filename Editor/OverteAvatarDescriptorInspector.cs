@@ -24,7 +24,7 @@ namespace Overte.Exporter.Avatar.Editor
 
         private bool _showBlendshapeList = true;
         private bool _showFlowConfig;
-        private Vector2 _scrollPosition;
+        private Vector2 _scrollPositionBlend, _scrollPositionFlow;
         private SkinnedMeshRenderer[] _skinnedMeshRenderers;
         private AvatarExporter _exporter;
         private Dictionary<Constants.AvatarRule, string> _warnings = new();
@@ -162,7 +162,7 @@ namespace Overte.Exporter.Avatar.Editor
                 return;
 
             // Scrollable area for blend shape mappings
-            _scrollPosition = EditorGUILayout.BeginScrollView(_scrollPosition,
+            _scrollPositionBlend = EditorGUILayout.BeginScrollView(_scrollPositionBlend,
                 GUILayout.Height(Mathf.Min(_remapedBlendShapeListProperty.arraySize * 120f, 300f)));
 
             for (var i = 0; i < _remapedBlendShapeListProperty.arraySize; i++)
@@ -271,7 +271,7 @@ namespace Overte.Exporter.Avatar.Editor
                 return;
 
             // Scrollable area for blend shape mappings
-            _scrollPosition = EditorGUILayout.BeginScrollView(_scrollPosition,
+            _scrollPositionFlow = EditorGUILayout.BeginScrollView(_scrollPositionFlow,
                 GUILayout.Height(Mathf.Min(_flowBoneListProperty.arraySize * 120f, 300f)));
 
             for (var i = 0; i < _flowBoneListProperty.arraySize; i++)
