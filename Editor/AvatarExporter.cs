@@ -24,6 +24,7 @@ namespace Overte.Exporter.Avatar
     internal class AvatarExporter
     {
         private GameObject _avatar;
+        private SkinnedMeshRenderer[] _avatarSkinnedMeshRenderers;
         private string _name;
 
         private readonly Dictionary<AvatarRule, string> _failedAvatarRules = new();
@@ -69,27 +70,12 @@ namespace Overte.Exporter.Avatar
             var avatarCopy = Object.Instantiate(_avatar, Vector3.zero, Quaternion.identity);
             var avatarDescriptor = _avatar.GetComponent<OverteAvatarDescriptor>();
 
-            var meshes = avatarCopy.GetComponentsInChildren<SkinnedMeshRenderer>();
+            _avatarSkinnedMeshRenderers = avatarCopy.GetComponentsInChildren<SkinnedMeshRenderer>();
             if (avatarDescriptor.RemapedBlendShapeList.Count > 0 && avatarDescriptor.OptimizeBlendShapes)
             {
-                foreach (var mesh in meshes)
+                foreach (var mesh in _avatarSkinnedMeshRenderers)
                 {
                     BakeAndKeepSpecifiedBlendShapes(avatarDescriptor, mesh);
-                }
-            }
-
-            if (avatarDescriptor.FlowBoneList.Count > 0)
-            {
-                foreach (var mesh in meshes)
-                {
-                    foreach (var bone in avatarDescriptor.FlowBoneList)
-                    {
-                        var tr = mesh.bones.SingleOrDefault(b => b.name == bone.boneName);
-                        if (tr == null)
-                            continue;
-                        var i = 0;
-                        IterateBone(tr, bone.ID, i);
-                    }
                 }
             }
 
@@ -103,13 +89,6 @@ namespace Overte.Exporter.Avatar
             WriteFst(path);
 
             Object.DestroyImmediate(avatarCopy);
-        }
-
-        private void IterateBone(Transform b, string name, int i)
-        {
-            b.name = $"flow_{name}_{i++}";
-            if (b.childCount > 0)
-                IterateBone(b.GetChild(0), name, i);
         }
 
         public Dictionary<AvatarRule, string> CheckForErrors(GameObject avatar)
@@ -156,6 +135,7 @@ namespace Overte.Exporter.Avatar
 
             // write out joint mappings to fst file
             foreach (var userBoneInfo in _userBoneInfos)
+            {
                 if (userBoneInfo.Value.HasHumanMapping())
                 {
                     var jointName = HUMANOID_TO_OVERTE_JOINT_NAME[userBoneInfo.Value.humanName];
@@ -168,6 +148,30 @@ namespace Overte.Exporter.Avatar
                     else
                         fst.jointMapList.Find(x => x.From == jointName).To = userJointName;
                 }
+            }
+            // write flow bones to fst file
+            if (avatarDescriptor.FlowBoneList.Count > 0)
+            {
+                foreach (var mesh in _avatarSkinnedMeshRenderers)
+                {
+                    foreach (var bone in avatarDescriptor.FlowBoneList)
+                    {
+                        var tr = mesh.bones.SingleOrDefault(b => b.name == bone.boneName);
+                        if (tr == null)
+                            continue;
+                        var i = 0;
+                        fst.jointMapList.AddRange(IterateBone(tr, bone.ID, i));
+
+                        List<JointMap> IterateBone(Transform t, string name, int it)
+                        {
+                            var j = new List<JointMap> { new($"flow_{name}_{it++}", t.name) };
+                            if (t.childCount > 0)
+                                j.AddRange(IterateBone(t.GetChild(0), name, it));
+                            return j;
+                        }
+                    }
+                }
+            }
 
             // calculate and write out joint rotation offsets to fst file
             var skeletonMap = _humanDescription.skeleton;
